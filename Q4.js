@@ -1,3 +1,4 @@
+const async = require('async');
 const download = require('image-downloader');
 const fs = require('fs');
 
@@ -13,18 +14,29 @@ const img_list = [
     'https://media.glassdoor.com/l/e9/c1/7a/84/independence-day-celebration.jpg'
     ];
 
-const downloadImage = (url, filepath) => {
+const root = './Images/';
+let current_folder = 0, count = 0;
+
+async function downloadImage(url, filepath){
         return download.image({
         url,
         dest: filepath 
         }).then(({ filename }) => {
-            console.log('Saved to', filename)
+            console.log('Saved');
           })
         .catch((err) => console.error(err))
     }
 
-img_list.forEach((x) => {
-    let index = img_list.indexOf(x);
-    console.log(index);
-    downloadImage(x,'./Images/');
-})
+async.forEachOf(img_list,(value, key, callback) => {
+    if(!fs.existsSync(root+current_folder)){
+        fs.mkdirSync(root+current_folder);
+    }
+
+    downloadImage(value,root+current_folder);
+    if(++count == 5){
+        current_folder++;
+        count=0;
+    }
+
+    callback();
+});
